@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movies-deployment
+  labels:
+    app: movies
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: movies
+  template:
+    metadata:
+      labels:
+        app: movies
+    spec:
+      containers:
+        - name: nodejs
+          image: gcr.io/yugaworld/movies-service
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: movies-credentials
+              mountPath: /etc/gcp
+              readOnly: true
+            - name: root-certificate
+              mountPath: /etc/ssl/certs
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: "/etc/gcp/credentials.json"
+            - name: NODE_ENV
+              value: "production"
+            - name: DB_HOST
+              value: YUGABYTEDB_HOST
+            - name: DB_PASSWORD
+              value: YUGABYTEDB_PASSWORD
+            - name: VERTEX_AI_MODEL
+              value: textembedding-gecko@001
+      volumes:
+        - name: movies-credentials
+          secret:
+            secretName: movies-credentials
+        - name: root-certificate
+          secret:
+            secretName: root-certificate

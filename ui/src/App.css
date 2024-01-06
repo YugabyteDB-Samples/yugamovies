@@ -1,0 +1,195 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f8f8; /* Or any other color */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  /* margin-bottom: 70px; */
+}
+
+.header .brand-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0px;
+  text-align: left;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+}
+
+.header .brand-logo img {
+  height: 40px;
+  vertical-align: middle;
+}
+
+.header .user-logo {
+  cursor: pointer;
+}
+
+.header .user-logo img {
+  height: 40px;
+  vertical-align: middle;
+}
+/* Login and Search container styling */
+.login-container,
+.search-container {
+  position: relative;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  width: 60%;
+  background-color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  width: 600px; /* Adjust width as needed */
+  height: 400px; /* New height for the container */
+  padding: 20px;
+  border: 1px solid #ddd;
+  background-color: white; /* Or any other color you prefer */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 10px; /* Optional: for rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: for shadow effect */
+}
+
+.login-container {
+  margin-top: 70px;
+}
+
+.search-container {
+  height: 250px;
+  flex-shrink: 0;
+}
+
+.movies-search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.movies-search-container ul {
+  width: 60vw;
+}
+
+.login-heading,
+.search-heading {
+  /* width: 100%; */
+  align-self: center;
+  font-size: 2em; /* Adjust size as needed */
+  color: rgba(93, 95, 239, 1); /* Adjust color as needed */
+  margin-bottom: 0em; /* Space below the heading */
+}
+
+.search-heading,
+.search-subheading {
+  /* width: 65%; */
+}
+
+.login-subheading,
+.search-subheading {
+  font-size: 1em; /* Smaller than the main heading */
+  font-weight: 300;
+  color: #666; /* A lighter color for the subheading */
+  margin-bottom: 1.5em; /* Space below the subheading */
+}
+
+/* Form styling */
+form {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 60%;
+  padding: 15px; /* Increased padding for more height */
+  margin: 10px 0;
+  border-radius: 10px; /* Rounded corners */
+  border: 1px solid #ccc;
+}
+
+.search-container input[type="text"] {
+  width: 100%;
+}
+
+button {
+  min-width: 30%;
+  padding: 10px 15px;
+  margin: 10px 0;
+  cursor: pointer;
+  border-radius: 5px;
+  border-width: 0px;
+  color: white;
+  font-size: 1em;
+  /* background: linear-gradient(282.49deg, #ed35c5 0.48%, #7879f1 93.17%); */
+  background: rgba(93, 95, 239, 1);
+}
+
+/* List styling */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px; /* Rounded corners for list items */
+  text-align: left; /* Align text to the left */
+  background-color: #f9f9f9; /* Light background for each item */
+}
+
+li .title {
+  font-weight: bold;
+  margin-bottom: 5px; /* Space between title and overview */
+}
+
+li .overview {
+  font-size: 0.9em;
+  color: #555; /* Slightly muted color for the overview */
+  line-height: 1.4; /* Improved line spacing for readability */
+}
+
+.search-button-container {
+  position: relative;
+}
+.search-button-container .spinner {
+  position: absolute;
+  top: 15px;
+  right: -40px;
+}
+.spinner {
+  position: absolute;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid rgba(93, 95, 239, 1);
+  width: 20px;
+  height: 20px;
+  animation: spin 2s linear infinite;
+  bottom: 30px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

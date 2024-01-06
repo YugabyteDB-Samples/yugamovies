@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+  labels:
+    app: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth-service
+          image: gcr.io/yugaworld/auth-service
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: root-certificate
+              mountPath: /etc/ssl/certs
+              readOnly: true
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: DB_HOST
+              value: YUGABYTEDB_HOST
+            - name: DB_PASSWORD
+              value: YUGABYTEDB_PASSWORD
+      volumes:
+        - name: root-certificate
+          secret:
+            secretName: root-certificate
