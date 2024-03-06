@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: internal-movies-service
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: movies

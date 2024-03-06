@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install any needed packages
-RUN npm install
+RUN NODE_ENV=production npm i
 
 # Bundle app source
 COPY . .

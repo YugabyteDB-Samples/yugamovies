@@ -21,7 +21,6 @@ function Login() {
       });
 
       setIsLoggingIn(false);
-      debugger;
       onLogin(response.data.token); // Call onLogin only if login is successful
     } catch (error) {
       setIsLoggingIn(false);

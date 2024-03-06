@@ -49,10 +49,12 @@ app.post("/login", async (req, res) => {
 
     console.log("user query start");
     const userQueryStart = Date.now();
+    const time = Date.now();
     const userResponse = await pool.query(
       "select * from find_user_credentials($1, $2)",
       [username, REGION]
     );
+    const latency = Date.now() - time;
 
     console.log("userQueryTiming", Date.now() - userQueryStart);
     // const userExplainAnalyze = await pool.query(
@@ -80,10 +82,28 @@ app.post("/login", async (req, res) => {
 
     // const totalTime = Date.now() - start;
     // console.log("totalTime", totalTime);
-    res.send({ token });
+    res.send({ token, latency });
   } catch (e) {
     console.log(`Error in /login: ${e}`);
     res.status(400).send(`Error in /login`);
+  }
+});
+
+app.post("/users", async (req, res) => {
+  try {
+    const { firstName, lastName, username } = req.body;
+    const password = bcrypt.hashSync(req.body.password, 8);
+    const geo = req.body.geo || REGION;
+    const time = Date.now();
+    await pool.query(
+      "INSERT INTO users(first_name, last_name, username, password, geo) VALUES ($1, $2, $3, $4, $5)",
+      [firstName, lastName, username, password, geo]
+    );
+    const latency = Date.now() - time;
+    res.status(201).send({ status: "Created user successfully.", latency });
+  } catch (e) {
+    console.log(`Error in POST /users: ${e}`);
+    res.status(400).send(`Error in POST /users`);
   }
 });
 

@@ -4,25 +4,25 @@
 
 From /movies-service
 ```
-docker build -t gcr.io/yugaworld/movies-service .
+docker build -t gcr.io/yugaworld/movies-service:VERSION_NUMBER .
 
 # NOTE: Remember to supply the platform argument, if necessary on your system
-docker build --platform=linux/amd64 -t gcr.io/yugaworld/movies-service .
+docker build --platform=linux/amd64 -t gcr.io/yugaworld/movies-service:VERSION_NUMBER .
 
 # Push Docker image to Google Container Registry
-docker push gcr.io/yugaworld/movies-service
+docker push gcr.io/yugaworld/movies-service:VERSION_NUMBER
 ```
 
 From /auth-service
 ```
 # build Docker image
-docker build -t gcr.io/yugaworld/auth-service .
+docker build -t gcr.io/yugaworld/auth-service:VERSION_NUMBER .
 
 # NOTE: Remember to supply the platform argument, if necessary on your system
-docker build --platform=linux/amd64 -t gcr.io/yugaworld/auth-service .
+docker build --platform=linux/amd64 -t gcr.io/yugaworld/auth-service:VERSION_NUMBER .
 
 # Push Docker image to Google Container Registry
-docker push gcr.io/yugaworld/auth-service
+docker push gcr.io/yugaworld/auth-service:VERSION_NUMBER
 ```
 
 ## Create service account with Vertex AI access
@@ -60,8 +60,18 @@ kubectl apply -f deployment.yaml
 
 ```
 # from /movies-service
-kubectl apply -f load-balancer-service.yaml 
+kubectl apply -f internal-load-balancer-service.yaml 
 
 # from /auth-service
-kubectl apply -f load-balancer-service.yaml 
+kubectl apply -f internal-load-balancer-service.yaml 
 ```
+
+## Updating Deployment in GKE
+
+1. Rebuild image locally.
+2. Push new version to Google Container Registry.
+3. Set new image in GKE deployment.
+    ```
+    # from /movies-service
+    kubectl set image deployment/movies-deployment nodejs=gcr.io/yugaworld/movies-service:VERSION_NUMBER
+    ```

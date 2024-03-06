@@ -3,29 +3,40 @@ const fs = require("fs");
 const cors = require("cors");
 
 let rootCertPath;
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config({ path: path.resolve(__dirname, "./.env") });
-  rootCertPath = path.resolve(__dirname, "../certs/root.crt");
-} else {
+
+if (process.env.NODE_ENV === "production") {
   // if running in Kubernetes, this will be passed as a Kubernetes Secret to /etc/ssl/certs
   rootCertPath = "/etc/ssl/certs/root.crt";
+} else if (process.env.NODE_ENV === "test") {
+  require("dotenv").config({ path: path.resolve(__dirname, "./.env") });
+  rootCertPath = path.resolve(__dirname, "./certs/root.crt");
+} else {
+  require("dotenv").config({ path: path.resolve(__dirname, "./.env") });
+  rootCertPath = path.resolve(__dirname, "../certs/root.crt");
 }
 const { DB_HOST, DB_PASSWORD } = process.env;
 
 const { Pool } = require("@yugabytedb/pg");
-const pool = new Pool({
+
+const followerReadsPool = new Pool({
   database: "yugabyte",
   host: DB_HOST,
   user: "admin",
   port: 5433,
   password: DB_PASSWORD,
   max: 10,
-  idleTimeoutMillis: 0,
+  idleTimeoutMillis: 0, // keep connection open
   ssl: {
     rejectUnauthorized: true,
     ca: fs.readFileSync(rootCertPath).toString(),
     servername: DB_HOST,
   },
+});
+
+followerReadsPool.on("connect", async (c) => {
+  console.log("Setting follower reads session properties.");
+  await c.query("set yb_read_from_followers = true;");
+  await c.query("set session characteristics as transaction read only;");
 });
 
 const express = require("express");
@@ -92,19 +103,46 @@ App.get(
   getEmbeddings,
   async (req, res) => {
     try {
-      console.log("req.user", req.user);
-      const embeddings = req?.embeddings;
+      const textEmbeddings = req?.embeddings;
 
-      if (!embeddings) throw "No embeddings supplied.";
+      if (!textEmbeddings) throw "No embeddings supplied.";
 
-      const dbRes = await pool.query(
-        "SELECT original_title, overview from movie where original_language = 'en' order by embeddings <=> $1 LIMIT 5",
-        [embeddings]
+      let movieQueryText =
+        "SELECT original_title, overview from movie where original_language = 'en'";
+      const movieQueryParams = [textEmbeddings];
+      let count = 2;
+      if (req?.query?.voteAverage && !Number.isNaN(req.query.voteAverage)) {
+        movieQueryText += ` AND vote_average >= $${count}`;
+        movieQueryParams.push(+req.query.voteAverage);
+        count++;
+      }
+
+      if (req?.query?.genre) {
+        movieQueryText += ` AND genres @> $${count}::jsonb`;
+        const jsonString = JSON.stringify([{ name: req.query.genre }]);
+        movieQueryParams.push(jsonString);
+        count++;
+      }
+
+      if (textEmbeddings) {
+        movieQueryText += ` AND 1 - (embeddings <=> $1::vector) > 0.6`;
+      }
+
+      movieQueryText += " order by embeddings <=> $1 LIMIT 5";
+
+      const time = Date.now();
+      const dbRes = await followerReadsPool.query(
+        movieQueryText,
+        movieQueryParams
       );
+
+      const latency = Date.now() - time;
 
       const recommendations = dbRes?.rows;
 
-      res.status(200).send(recommendations);
+      res
+        .status(200)
+        .send({ data: recommendations, latency, embeddings: textEmbeddings });
     } catch (err) {
       console.log(`Error in /movie-recommendations: ${err}`);
       res.status(400).send(`Error in /movie-recommendations`);
@@ -115,7 +153,6 @@ App.get(
 App.get("/embeddings", async (req, res) => {
   try {
     const text = req?.query?.searchText;
-    console.log("search text:", text);
 
     if (!text) {
       throw "no searchText supplied to /embeddings";
